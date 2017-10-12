@@ -6,7 +6,7 @@ import pytz
 import logging
 
 app = Flask(__name__)
-logging.getLogger('werkzeug').setLevel(logging.ERROR)
+# logging.getLogger('werkzeug').setLevel(logging.INFO)
 
 
 class Metadata:
@@ -31,16 +31,19 @@ class Metadata:
 metadata = Metadata()
 
 
-@app.route('/metadata/add/<string:station_id>/<string:song_name>', methods=['POST', 'GET'])
-def metadata_add(station_id, song_name):
-    if request.args.get('username', '') != config.USER_NAME \
-            or request.args.get('password', '') != config.USER_PASSWORD:
+@app.route('/metadata/add/<int:station_id>/', methods=['POST'])
+def metadata_add(station_id):
+    if request.form.get('username', '') != config.USER_NAME \
+            or request.form.get('password', '') != config.USER_PASSWORD:
         abort(403)
-    metadata.add_song(station_id, song_name, request.args.get('play_from', None))
+    song_name = request.form.get('song_name')
+    if not song_name:
+        abort(400)
+    metadata.add_song(station_id, song_name, request.form.get('play_from', None))
     return 'OK'
 
 
-@app.route('/metadata/get/<string:station_id>')
+@app.route('/metadata/get/<int:station_id>/')
 def metadata_get(station_id):
     meta = metadata.get_songs(station_id)
     return json.dumps(meta)
