@@ -15,14 +15,14 @@ class Metadata:
         self.stations = {}
         self.tz = pytz.timezone('Europe/Uzhgorod')
 
-    def add_song(self, station_name, song_name, played_to):
+    def add_song(self, station_name, song_name, play_from):
         if not self.stations.get(station_name):
             self.stations[station_name] = []
         if len(self.stations[station_name]) == self.max_songs:
             del self.stations[station_name][0]
         self.stations[station_name].append(
             {'name': song_name,
-             'played_to': played_to or '%s:%s' % (
+             'play_from': play_from or '%s:%s' % (
                  datetime.datetime.now(self.tz).hour, datetime.datetime.now(self.tz).minute)})
 
     def get_songs(self, station_name):
@@ -36,7 +36,7 @@ def metadata_add(station_name, song_name):
     if request.args.get('username', '') != config.USER_NAME \
             or request.args.get('password', '') != config.USER_PASSWORD:
         abort(403)
-    metadata.add_song(station_name, song_name, request.args.get('play_to', None))
+    metadata.add_song(station_name, song_name, request.args.get('play_from', None))
     return 'OK'
 
 
