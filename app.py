@@ -22,8 +22,8 @@ class Metadata:
             del self.stations[station_id][0]
         self.stations[station_id].append(
             {'name': song_name,
-             'play_from': play_from or '%s:%s' % (
-                 datetime.datetime.now(self.tz).hour, datetime.datetime.now(self.tz).minute)})
+             'play_from': play_from or datetime.datetime.strftime(
+                 datetime.datetime.now(self.tz), "%H:%M")})
 
     def get_songs(self, station_id):
         return self.stations.get(station_id, {})
