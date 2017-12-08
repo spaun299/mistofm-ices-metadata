@@ -25,8 +25,17 @@ class Metadata:
              'play_from': play_from or datetime.datetime.strftime(
                  datetime.datetime.now(self.tz), "%H:%M")})
 
-    def get_songs(self, station_id):
-        return self.stations.get(station_id, {})
+    def get_songs(self, station_id, amount=5):
+        songs = self.stations.get(station_id, [])
+        if len(songs) <= amount:
+            return songs
+        return songs[-amount:]
+
+    def get_current_song_name(self, station_id):
+        songs = self.stations.get(station_id, [])
+        if songs:
+            return songs[-1]['name']
+        return ''
 
 metadata = Metadata()
 
@@ -43,10 +52,19 @@ def metadata_add(station_id):
     return 'OK'
 
 
-@app.route('/metadata/get/<int:station_id>/')
+@app.route('/metadata/get/<int:station_id>')
 def metadata_get(station_id):
-    meta = metadata.get_songs(station_id)
+    amount = request.args.get('amount', '')
+    if (not amount.isdigit()) or int(amount) < 0:
+        amount = 5
+    meta = metadata.get_songs(station_id, amount=int(amount))
     return json.dumps(meta)
+
+
+@app.route('/metadata/get/<int:station_id>/current_song')
+def get_current_song_name(station_id):
+    return json.dumps({"name": metadata.get_current_song_name(station_id)})
+
 
 if __name__ == '__main__':
     app.run('0.0.0.0', config.PORT)
